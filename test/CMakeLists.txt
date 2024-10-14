@@ -1,0 +1,5 @@
+find_package(GTest REQUIRED)
+file(GLOB_RECURSE TEST_FILES "./*.cpp")
+add_executable(test_exec ${TEST_FILES})
+target_link_libraries(test_exec PRIVATE GTest::gtest_main ${LIBRARY_LIST})
+gtest_discover_tests(test_exec)

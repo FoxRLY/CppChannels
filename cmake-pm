@@ -1,0 +1,79 @@
+#!/bin/bash
+project_name=channel
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path";
+
+if [[ "${1,,}" == "build" ]]
+then
+    if [[ "${2,,}" == "release" ]] || [[ "${2,,}" == "debug" ]]
+    then
+        cmake -B ./build/${2,,} -DCMAKE_BUILD_TYPE=${2^^} -G Ninja && cmake --build build/${2,,}
+    else
+        echo 'Build avalable only in release and debug mode'
+    fi;
+    exit
+fi;
+
+if [[ "${1,,}" == "run" ]]
+then
+    if [[ "${2,,}" == "release" ]] || [[ "${2,,}" == "debug" ]]
+    then
+        cmake -B ./build/${2,,} -DCMAKE_BUILD_TYPE=${2^^} -G Ninja && cmake --build build/${2,,} && ./build/${2,,}/app/${project_name} "${@:3}"
+    else
+        echo 'Run avalable only in release and debug mode'
+    fi;
+    exit
+fi;
+
+if [[ "${1,,}" == "newlib" ]]
+then
+    if [ -d ./include/${2} ] || [ -d ./src/${2} ]
+    then
+        echo 'Include or src directories already have similarly named library, aborting'
+        exit
+    fi;
+    mkdir ./include/${2}
+    echo '#pragma once' >> ./include/${2}/${2}.h
+    echo '' >> ./include/${2}/${2}.h
+    echo 'int sum(int a, int b);' >> ./include/${2}/${2}.h
+    mkdir ./src/${2}
+    echo "#include <${2}/${2}.h>" >> ./src/${2}/${2}.cpp
+    echo '' >> ./src/${2}/${2}.cpp
+    echo 'int sum(int a, int b){ return a + b; }' >> ./src/${2}/${2}.cpp
+    echo "set(LIB_NAME ${2})" >> ./src/${2}/CMakeLists.txt
+    echo 'file(GLOB_RECURSE HEADER_FILES "${CMAKE_SOURCE_DIR}/include/${LIB_NAME}/*.h")' >> ./src/${2}/CMakeLists.txt
+    echo 'file(GLOB_RECURSE SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/${LIB_NAME}/*.cpp")' >> ./src/${2}/CMakeLists.txt
+    echo 'add_library(${LIB_NAME} ${SOURCE_FILES} ${HEADER_FILES})' >> ./src/${2}/CMakeLists.txt
+    echo 'target_include_directories(${LIB_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/include")' >> ./src/${2}/CMakeLists.txt
+    echo 'list(APPEND LIBRARY_LIST ${LIB_NAME})' >> ./src/${2}/CMakeLists.txt
+    echo 'set(LIBRARY_LIST ${LIBRARY_LIST} PARENT_SCOPE)' >> ./src/${2}/CMakeLists.txt
+    echo "Generated new library ${2}"
+    exit
+fi;
+
+if [[ "${1,,}" == "docs" ]]
+then
+    cmake -B ./build/debug -DCMAKE_BUILD_TYPE=DEBUG -G Ninja && cmake --build ./build/debug --target docs
+    exit
+fi;
+
+if [[ "${1,,}" == "test" ]]
+then
+    cmake -B ./build/debug -DCMAKE_BUILD_TYPE=DEBUG -G Ninja && cmake --build ./build/debug --target test_exec && GTEST_COLOR=1 ctest --test-dir ./build/debug "${@:2}"
+    exit
+fi;
+
+if [[ "${1,,}" == "clear" ]]
+then
+    rm -rf ./build
+    echo 'Cleared build directory'
+    exit
+fi;
+
+echo 'Project manager program:'
+echo '    newlib {lib_name}     - create new project library with name lib_name'
+echo '    run {release/debug}   - run project in release/debug mode'
+echo '    build {release/debug} - build project in release/debug mode'
+echo '    docs                  - build docs (will be located in build/debug/docs directory)'
+echo '    test                  - run tests (you can provide same arguments as if you were calling ctest)'
+echo '    clear                 - clear build directory'
