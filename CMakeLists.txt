@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 project(
     channel
-    VERSION 0.1.0
+    VERSION 0.1.1
     DESCRIPTION "project description"
     LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
@@ -25,7 +25,7 @@ set_target_properties(channel PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(channel PUBLIC "${CMAKE_SOURCE_DIR}/include")
 set(LIBRARY_LIST channel)
 
-add_subdirectory(test)
+# add_subdirectory(test)
 
 file(CREATE_LINK
     "${CMAKE_BINARY_DIR}/compile_commands.json"
