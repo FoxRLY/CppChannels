@@ -19,12 +19,12 @@ else()
 endif()
 
 
-file(GLOB_RECURSE HEADER_FILES "${CMAKE_SOURCE_DIR}/include/channel/*.hpp")
+file(GLOB_RECURSE HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/channel/*.hpp")
 add_library(channel ${HEADER_FILES})
 set_target_properties(channel PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(channel PUBLIC "${CMAKE_SOURCE_DIR}/include")
-set(LIBRARY_LIST channel)
+target_include_directories(channel PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+# set(LIBRARY_LIST channel)
 # add_subdirectory(test)
 
 file(CREATE_LINK
